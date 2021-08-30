@@ -89,6 +89,7 @@ class AdaAggLayer(nn.Module):
             weight = rearrange(self.weight, '(d e) o i j k->d (e o) i (j k)', d=1)
             # weight = self.weight.view(1, self.experts * self.out_planes, self.in_planes, self.kernel_size * self.kernel_size)
             weight = F.conv2d(weight, weight=self.align_conv, bias=None, stride=1, padding=0, dilation=1, groups=self.experts)
+            weight = rearrange(weight, 'd (e o) i (j k)->(d e) o i j k', e=self.experts, j=self.kernel_size)
         else:
             weight = self.weight
 
