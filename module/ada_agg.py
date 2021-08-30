@@ -94,7 +94,7 @@ class AdaAggLayer(nn.Module):
 
         # weight = self.weight
         aggregate_weight = rearrange(
-            torch.einsum('be,eoijk->boijk', sigmoid_attention, self.weight),
+            torch.einsum('be,eoijk->boijk', sigmoid_attention, weight),
             'b o i j k->(b o) i j k'
         )
 
