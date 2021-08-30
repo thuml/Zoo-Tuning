@@ -75,7 +75,7 @@ class AdaAggLayer(nn.Module):
         # lite version
         if self.lite:
             if self.training:
-                self.attention_value = (1 - self.m) * self.lite_attention + self.m * sigmoid_attention
+                self.lite_attention = (1 - self.m) * self.lite_attention + self.m * sigmoid_attention
             else:
                 sigmoid_attention = self.lite_attention
 
