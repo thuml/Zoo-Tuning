@@ -48,13 +48,12 @@ def get_configs():
                         help='Momentum value for optimizer')
     parser.add_argument('--weight_decay', default=5e-4,
                         type=float, help='Weight decay value for optimizer')
+    parser.add_argument('--ratio', default=1.0, type=float)
 
     # experiment
-    parser.add_argument('--root', default='.', type=str,
-                        help='Root of the experiment')
+    parser.add_argument('--lite', default=0, type=int)
     parser.add_argument('--name', default=None, type=str,
                         help='Name of the experiment')
-    parser.add_argument('--ratio', default=1.0, type=float)
     parser.add_argument('--save_dir', default="model",
                         type=str, help='Path of saved models')
     parser.add_argument('--visual_dir', default="visual",
@@ -79,20 +78,20 @@ def get_writer(log_dir):
 
 def get_data_loader(configs):
     dataset_dict = {
-        'air': ['/data/FGVCAircraft', 100],
-        'cars': ['/data/stanford_cars', 196],
-        'mit': ['/data/MITindoors67', 67],
+        'air': ['/data3/zoo-tuning/FGVCAircraft', 100],
+        'cars': ['/data3/zoo-tuning/stanford_cars', 196],
+        'mit': ['/data3/zoo-tuning/MITindoors67', 67],
     }
     # data augmentation
     data_transforms = get_transforms(resize_size=256, crop_size=224)
 
     # build dataset
     if configs.dataset == 'cifar':
-        train_dataset = datasets.CIFAR100(root='/data/finetune', train=True, transform=data_transforms['train'], download=True)
-        val_dataset = datasets.CIFAR100(root='/data/finetune', train=False, transform=data_transforms['val'])
+        train_dataset = datasets.CIFAR100(root='/data3/zoo-tuning', train=True, transform=data_transforms['train'], download=True)
+        val_dataset = datasets.CIFAR100(root='/data3/zoo-tuning', train=False, transform=data_transforms['val'])
         test_datasets = {
             'test' + str(i):
-                datasets.CIFAR100(root='/data/finetune', train=False, transform=data_transforms['test' + str(i)])
+                datasets.CIFAR100(root='/data3/zoo-tuning', train=False, transform=data_transforms['test' + str(i)])
             for i in range(10)
         }
         class_num = 100
@@ -101,7 +100,7 @@ def get_data_loader(configs):
                 os.path.join(dataset_dict[configs.dataset][0], 'train'),
                 transform=data_transforms['train'])
         val_dataset = datasets.ImageFolder(
-                os.path.join(dataset_dict[configs.dataset][0], 'val'),
+                os.path.join(dataset_dict[configs.dataset][0], 'test'),
                 transform=data_transforms['val'])
         test_datasets = {
             'test' + str(i):
@@ -242,19 +241,18 @@ def main():
     class Net(nn.Module):
         def __init__(self):
             super(Net, self).__init__()
-            self.f_net = build_model() 
+            self.f_net = build_model(lite=configs.lite)
             self.c_net = nn.Linear(2048, class_num)
             self.c_net.weight.data.normal_(0, 0.01)
             self.c_net.bias.data.fill_(0.0)
                 
-        def forward(self, x, task=0):
+        def forward(self, x):
             feature = self.f_net(x)
             out = self.c_net(feature)
 
             return out
 
     net = Net().cuda()
-
 
     train(configs, train_loader, val_loader, test_loaders, net)
 

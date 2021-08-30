@@ -7,7 +7,7 @@ from .ada_agg import AdaAggLayer
 
 experts = 5
 
-__all__ = ['ResNet', 'build_model', 'ResNet_F']
+__all__ = ['ResNet', 'build_model', 'ResNet50_F']
 
 
 def conv7x7(in_planes, out_planes, padding=3, stride=1, groups=1, dilation=1, experts=5, align=False, lite=False):
@@ -160,7 +160,7 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x, task=1):
+    def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -288,7 +288,7 @@ class ResNet50_F(nn.Module):
         self.avgpool = model_resnet50.avgpool
         self.__in_features = model_resnet50.fc.in_features
 
-    def forward(self, x, task=0):
+    def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)

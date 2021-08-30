@@ -72,16 +72,19 @@ class AdaAggLayer(nn.Module):
     def forward(self, x):
         sigmoid_attention = self.attention(x)  # batch_size * experts
 
+        batch_size = x.shape[0]
+
         # lite version
         if self.lite:
             if self.training:
+                sigmoid_attention = sigmoid_attention.mean(0)
                 self.lite_attention = (1 - self.m) * self.lite_attention + self.m * sigmoid_attention
             else:
                 sigmoid_attention = self.lite_attention
 
-        batch_size = x.shape[0]
+            sigmoid_attention = sigmoid_attention.unsqueeze(0).repeat(batch_size, 1)
 
-        # x = x.view(1, -1, height, width)  # 变化成一个维度进行组卷积  # 1 * BC * H * W
+        # x = x.view(1, -1, height, width)   # 1 * BC * H * W
         x = rearrange(x, '(d b) c h w->d (b c) h w', d=1)
 
         # channel-wise align

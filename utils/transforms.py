@@ -1,7 +1,7 @@
 from PIL import Image
 from torchvision import transforms
 
-__all__ = ['get_transforms', 'get_transforms_new']
+__all__ = ['get_transforms']
 
 
 class ResizeImage():
