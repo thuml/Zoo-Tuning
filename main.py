@@ -14,6 +14,7 @@ from tqdm import tqdm
 from module.backbone import build_model
 from utils.transforms import get_transforms
 from utils.tools import AccuracyMeter, TenCropsTest
+from utils.coco70 import COCO70
 
 def get_configs():
     parser = argparse.ArgumentParser(
@@ -34,7 +35,7 @@ def get_configs():
     # dataset
     parser.add_argument('--dataset', default='cifar',
                         type=str, help='Name of dataset')
-    parser.add_argument('--num_workers', default=2, type=int,
+    parser.add_argument('--num_workers', default=4, type=int,
                         help='Num of workers used in dataloading')
 
     # optimizer
@@ -79,6 +80,7 @@ def get_writer(log_dir):
 def get_data_loader(configs):
     dataset_dict = {
         'air': ['/data3/zoo-tuning/FGVCAircraft', 100],
+        'coco': ['/data3/zoo-tuning/COCO70', 70],
         'cars': ['/data3/zoo-tuning/stanford_cars', 196],
         'mit': ['/data3/zoo-tuning/MITindoors67', 67],
     }
@@ -95,6 +97,23 @@ def get_data_loader(configs):
             for i in range(10)
         }
         class_num = 100
+    elif configs.dataset == 'coco':
+        train_dataset = COCO70(
+            dataset_dict[configs.dataset][0], split='train',
+            transform=data_transforms['train'])
+        val_dataset = COCO70(
+            dataset_dict[configs.dataset][0], split='test',
+            transform=data_transforms['val'])
+        test_datasets = {
+            'test' + str(i):
+                COCO70(
+                    dataset_dict[configs.dataset][0], split='test',
+                    transform=data_transforms['test' + str(i)]
+                )
+            for i in range(10)
+        }
+
+        class_num = dataset_dict[configs.dataset][1]
     else:
         train_dataset = datasets.ImageFolder(
                 os.path.join(dataset_dict[configs.dataset][0], 'train'),
@@ -202,7 +221,7 @@ def train(configs, train_loader, val_loader, test_loaders, net):
 
         calc_duration = time() - calc_start
 
-        if iter_num % configs.eval_iter == 0:
+        if iter_num % configs.eval_iter == 0 and iter_num > 0:
 
             with torch.no_grad():
                 eval_acc_meter = AccuracyMeter(topk=(1,))
@@ -219,7 +238,7 @@ def train(configs, train_loader, val_loader, test_loaders, net):
             train_acc_meter.reset()
             eval_acc_meter.reset()
 
-        if iter_num % configs.test_iter == 0:
+        if iter_num % configs.test_iter == 0 and iter_num > 0:
             test_acc = TenCropsTest(test_loaders, net)
             
             writer.add_scalar('acc/test_acc', test_acc, iter_num)

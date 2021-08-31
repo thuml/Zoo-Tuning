@@ -20,6 +20,7 @@ For convenience, we also provide the pretrained models downloaded from these pag
 | Dataset | Download Link |
 | ------ | ------ |
 | CIFAR-100	 | Downloaded automatically from torchvision. |
+| COCO-70	 | https://github.com/thuml/CoTuning |
 | FGVC Aircraft | http://www.robots.ox.ac.uk/~vgg/data/fgvc-aircraft/ |
 | Stanford Cars | http://ai.stanford.edu/~jkrause/cars/car_dataset.html |
 | MIT Indoors | http://web.mit.edu/torralba/www/indoor.html |
