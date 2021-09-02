@@ -26,10 +26,10 @@ def get_configs():
     parser.add_argument('--seed', type=int, default=2020)
 
     parser.add_argument('--batch_size', default=48, type=int)
-    parser.add_argument('--total_iter', default=9050, type=int)
+    parser.add_argument('--total_iter', default=15050, type=int)
     parser.add_argument('--eval_iter', default=1000, type=int)
-    parser.add_argument('--test_iter', default=9000, type=int)
-    parser.add_argument('--save_iter', default=9000, type=int)
+    parser.add_argument('--test_iter', default=15000, type=int)
+    parser.add_argument('--save_iter', default=15000, type=int)
     parser.add_argument('--print_iter', default=100, type=int)
 
     # dataset
